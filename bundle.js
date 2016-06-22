@@ -5,99 +5,125 @@
                 var o = typeof require == "function" && require;
                 if (!s && o) return o(n, !0);
                 if (r) return r(n, !0);
-                throw new Error("Cannot find module '" + n + "'")
+                throw new Error("Cannot find module '" + n + "'");
             }
             var u = t[n] = {
                 exports: {}
             };
             e[n][0].call(u.exports, function(t) {
                 var r = e[n][1][t];
-                return i(r ? r : t)
-            }, u, u.exports)
+                return i(r ? r : t);
+            }, u, u.exports);
         }
-        return t[n].exports
+        return t[n].exports;
     }
     var r = typeof require == "function" && require;
     for (var s = 0; s < n.length; s++) i(n[s]);
-    return i
+    return i;
 })({
     1: [function(require, module, exports) {
         var fps = require('fps'),
             ticker = require('ticker'),
             debounce = require('debounce'),
-            Boids = require('./')
+            Boids = require('./');
 
         var attractors = [
-            [
-                Infinity // x
-                , Infinity // y
-                , 150 // dist
-                , 0.25 // spd
+              [
+              Infinity, // x
+              Infinity, // y
+              100,// dist
+              -50 // spd
             ]
-        ]
+        ];
 
         var canvas = document.createElement('canvas'),
             ctx = canvas.getContext('2d'),
             boids = Boids({
-                boids: 150,
-                speedLimit: 2,
-                accelerationLimit: 0.5,
+                boids: 10,
+                speedLimit: 0.5,
+                accelerationLimit: 100.5,
                 attractors: attractors
-            })
+            });
 
         document.body.onmousemove = function(e) {
             var halfHeight = canvas.height / 2,
-                halfWidth = canvas.width / 2
+                halfWidth = canvas.width / 2;
 
-            attractors[0][0] = e.x - halfWidth
-            attractors[0][1] = e.y - halfHeight
-        }
+            attractors[0][0] = e.x - halfWidth;
+            attractors[0][1] = e.y - halfHeight;
+        };
 
         window.onresize = debounce(function() {
-            canvas.width = window.innerWidth
-            canvas.height = window.innerHeight
-        }, 100)
-        window.onresize()
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }, 100);
+        window.onresize();
 
-        document.body.style.margin = '0'
-        document.body.style.padding = '0'
-        document.body.appendChild(canvas)
+        document.body.style.margin = '0';
+        document.body.style.padding = '0';
+        document.body.appendChild(canvas);
 
         ticker(window, 60).on('tick', function() {
-            frames.tick()
-            boids.tick()
+            frames.tick();
+            boids.tick();
         }).on('draw', function() {
             var boidData = boids.boids,
                 halfHeight = canvas.height / 2,
-                halfWidth = canvas.width / 2
+                halfWidth = canvas.width / 2;
 
-            ctx.fillStyle = 'rgba(255,241,235,0.25)' // '#FFF1EB'
-            ctx.fillRect(0, 0, canvas.width, canvas.height)
+            ctx.fillStyle = 'rgba(255,241,235,0.25)'; // '#FFF1EB'
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            ctx.fillStyle = '#543D5E'
+            ctx.fillStyle = '#543D5E';
             for (var i = 0, l = boidData.length, x, y; i < l; i += 1) {
                 x = boidData[i][0];
-                y = boidData[i][1]
+                y = boidData[i][1];
+                //to connect a line, i2 = the previous boid
+                i2 = i === 0 ? l-1 : i-1;
+                //var r = Math.random();
+                //var i2 = Math.round(r)*(l-1);
+                
+                var x2 = boidData[i2][0];
+                var y2 = boidData[i2][1];
                     // wrap around the screen
-                boidData[i][0] = x > halfWidth ? -halfWidth : -x > halfWidth ? halfWidth : x
-                boidData[i][1] = y > halfHeight ? -halfHeight : -y > halfHeight ? halfHeight : y
-                ctx.fillRect(x + halfWidth, y + halfHeight, 2, 2)
-            }
-        })
+                boidData[i][0] = x > halfWidth ? -halfWidth : -x > halfWidth ? halfWidth : x;
+                boidData[i][1] = y > halfHeight ? -halfHeight : -y > halfHeight ? halfHeight : y;
 
-        var frameText = document.querySelector('[data-fps]')
-        var countText = document.querySelector('[data-count]')
-        var frames = fps({
-            every: 10,
-            decay: 0.04
-        }).on('data', function(rate) {
-            for (var i = 0; i < 3; i += 1) {
-                if (rate <= 56 && boids.boids.length > 10) boids.boids.pop()
-                if (rate >= 60 && boids.boids.length < 500) boids.boids.push([0, 0, Math.random() * 6 - 3, Math.random() * 6 - 3, 0, 0])
+                //draw a circle
+                var radius = 20;
+                ctx.beginPath();
+                ctx.arc(x + halfWidth, y + halfHeight, radius, 0, 2 * Math.PI);
+                ctx.lineWidth = 5;
+                ctx.strokeStyle = '#003300';
+                ctx.stroke();
+
+                //draw line between i and i2
+                ctx.beginPath();
+                ctx.moveTo(x + halfWidth, y + halfHeight);
+                ctx.lineTo(x2 + halfWidth, y2 + halfHeight);
+                ctx.stroke();
+
+
+
+
             }
-            frameText.innerHTML = String(Math.round(rate))
-            countText.innerHTML = String(boids.boids.length)
-        })
+        });
+
+        var frameText = document.querySelector('[data-fps]');
+        var countText = document.querySelector('[data-count]');
+
+        var frames = fps({
+            every: 5,
+            decay: 0.5
+        }).on('data', function(rate) {
+          /*  for (var i = 0; i < 3; i += 1) {
+                if (rate <= 56 && boids.boids.length > 10) boids.boids.pop();
+                if (rate >= 60 && boids.boids.length < 30) boids.boids.push([0, 0, Math.random() * 6 - 3, Math.random() * 6 - 3, 0, 0]);
+            }*/
+            frameText.innerHTML = String(Math.round(rate));
+            countText.innerHTML = String(boids.boids.length);
+
+        });
 
     }, {
         "fps": 2,
@@ -357,7 +383,7 @@
                     var i = indexOf(list, listener);
                     if (i < 0) return this;
                     list.splice(i, 1);
-                    if (list.length == 0)
+                    if (list.length === 0)
                         delete this._events[type];
                 } else if (this._events[type] === listener) {
                     delete this._events[type];
@@ -432,10 +458,10 @@
             }
 
             this.on('tick', function() {
-                callback(boids)
-            })
+                callback(boids);
+            });
         }
-        inherits(Boids, EventEmitter)
+        inherits(Boids, EventEmitter);
 
         Boids.prototype.tick = function() {
             var boids = this.boids,
@@ -453,50 +479,50 @@
                 current = size,
                 sforceX, sforceY, cforceX, cforceY, aforceX, aforceY, spareX, spareY, attractors = this.attractors,
                 attractorCount = attractors.length,
-                distSquared, currPos, targPos, length, target
+                distSquared, currPos, targPos, length, target;
 
             while (current--) {
                 sforceX = 0;
-                sforceY = 0
+                sforceY = 0;
                 cforceX = 0;
-                cforceY = 0
+                cforceY = 0;
                 aforceX = 0;
-                aforceY = 0
-                currPos = boids[current]
+                aforceY = 0;
+                currPos = boids[current];
 
                 // Attractors
-                target = attractorCount
+                target = attractorCount;
                 while (target--) {
-                    attractor = attractors[target]
-                    spareX = currPos[0] - attractor[0]
-                    spareY = currPos[1] - attractor[1]
-                    distSquared = spareX * spareX + spareY * spareY
+                    attractor = attractors[target];
+                    spareX = currPos[0] - attractor[0];
+                    spareY = currPos[1] - attractor[1];
+                    distSquared = spareX * spareX + spareY * spareY;
 
                     if (distSquared < attractor[2] * attractor[2]) {
-                        length = sqrt(spareX * spareX + spareY * spareY)
-                        boids[current][SPEEDX] -= (attractor[3] * spareX / length) || 0
-                        boids[current][SPEEDY] -= (attractor[3] * spareY / length) || 0
+                        length = sqrt(spareX * spareX + spareY * spareY);
+                        boids[current][SPEEDX] -= (attractor[3] * spareX / length) || 0;
+                        boids[current][SPEEDY] -= (attractor[3] * spareY / length) || 0;
                     }
                 }
 
-                target = size
+                target = size;
                 while (target--) {
-                    if (target === current) continue
-                    spareX = currPos[0] - boids[target][0]
-                    spareY = currPos[1] - boids[target][1]
-                    distSquared = spareX * spareX + spareY * spareY
+                    if (target === current) continue;
+                    spareX = currPos[0] - boids[target][0];
+                    spareY = currPos[1] - boids[target][1];
+                    distSquared = spareX * spareX + spareY * spareY;
 
                     if (distSquared < sepDist) {
-                        sforceX += spareX
-                        sforceY += spareY
+                        sforceX += spareX;
+                        sforceY += spareY;
                     } else {
                         if (distSquared < cohDist) {
-                            cforceX += spareX
-                            cforceY += spareY
+                            cforceX += spareX;
+                            cforceY += spareY;
                         }
                         if (distSquared < aliDist) {
-                            aforceX += boids[target][SPEEDX]
-                            aforceY += boids[target][SPEEDY]
+                            aforceX += boids[target][SPEEDX];
+                            aforceY += boids[target][SPEEDY];
                         }
                     }
                 }
@@ -522,29 +548,29 @@
                 if (accelerationLimit) {
                     distSquared = boids[current][ACCELERATIONX] * boids[current][ACCELERATIONX] + boids[current][ACCELERATIONY] * boids[current][ACCELERATIONY]
                     if (distSquared > accelerationLimit) {
-                        ratio = accelerationLimitRoot / sqrt(distSquared)
-                        boids[current][ACCELERATIONX] *= ratio
-                        boids[current][ACCELERATIONY] *= ratio
+                        ratio = accelerationLimitRoot / sqrt(distSquared);
+                        boids[current][ACCELERATIONX] *= ratio;
+                        boids[current][ACCELERATIONY] *= ratio;
                     }
                 }
 
-                boids[current][SPEEDX] += boids[current][ACCELERATIONX]
-                boids[current][SPEEDY] += boids[current][ACCELERATIONY]
+                boids[current][SPEEDX] += boids[current][ACCELERATIONX];
+                boids[current][SPEEDY] += boids[current][ACCELERATIONY];
 
                 if (speedLimit) {
                     distSquared = boids[current][SPEEDX] * boids[current][SPEEDX] + boids[current][SPEEDY] * boids[current][SPEEDY]
                     if (distSquared > speedLimit) {
-                        ratio = speedLimitRoot / sqrt(distSquared)
-                        boids[current][SPEEDX] *= ratio
-                        boids[current][SPEEDY] *= ratio
+                        ratio = speedLimitRoot / sqrt(distSquared);
+                        boids[current][SPEEDX] *= ratio;
+                        boids[current][SPEEDY] *= ratio;
                     }
                 }
 
-                boids[current][POSITIONX] += boids[current][SPEEDX]
-                boids[current][POSITIONY] += boids[current][SPEEDY]
+                boids[current][POSITIONX] += boids[current][SPEEDX];
+                boids[current][POSITIONY] += boids[current][SPEEDY];
             }
 
-            this.emit('tick', boids)
+            this.emit('tick', boids);
         }
 
     }, {
